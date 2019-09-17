@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+    img{
+        display: inline-block;
+        width: 200px;
+        height: 200px;
+        border: 1px solid black;
+    }
+    </style>
+</head>
+<body>
+    
+    <script>
+    
+    
+    
+    
+    window.onload = function() {
+       /* 변수 */
+        let cntTotal = 0;   //짝의 개수 (ex: 피카츄 카드 + 피카츄 카드 -> cntTotal++; <-> 피카츄 카드 + 파이리 카드 -> cntTotal 변화X)
+        let button = null;  //버튼 태그(=element)를 임시 저장했다가 buttonArr에 저장하기 위한 임시 변수입니다.     
+        let buttonArr = [];
+        let buttonText = ['Shuffle','Toggle','Watch','Secret']; //버튼들의 이름입니다.
+        let img = null;                                         //imgArr[]에 이미지들을 저장하기 위한 임시 변수입니다.
+        let back = 'back.jpg'                                   //뒷면의 이미지 소스를 저장한 변수입니다.
+        let sources = ['guitar.jpg','harp.jpg','piano.jpg','tember.jpg'];//카드 소스를 저장한 변수입니다.
+        const cardKinds = sources.length;                       //카드의 종류입니다.
+        let imgArr = new Array(cardKinds * 2);                  //카드를 넣을 배열입니다.//짝수 개의 카드
+        
+        let cntFront = 0;                                       //카드를 "클릭해서" 뒤집을 때 카드의 앞장이 몇개 인지 확인합니다.
+                            //(단 이미 같은 짝을 찾아서 앞면 상태를 유지하는 카드에 대해서는 갯수로 세지 않습니다.)
+        let trapCard;       //함정카드를 저장할 것이다.
+
+        
+
+        /* 함수 */
+        function DrawCards(imgArr) {    //카드를 화면에 그립니다.
+            for (let i = 0; i <imgArr.length; i++) 
+                document.body.appendChild(imgArr[i]);
+        }
+
+
+        function Shuffle(imgArr) {      //imgArr의 카드들의 인덱스를 무작위로 바꿉니다..
+            imgArr.sort((a, b) => (Math.random() - 0.5));    
+        }
+
+        //섞기+그리기
+        function ShuffleDraw() {    // 셔플과 그리기를 동시에 합니다.
+            Shuffle(imgArr);
+            DrawCards(imgArr);    
+        }
+
+        //뒤집기
+        function ToggleCard(imgArr) {   //모든 카드를 토글합니다(=뒤집습니다).
+            if(cntFront!==0){           //카드를 찾는 도중에는 못합니다. 
+                console.log("While You're Choosing, You can't toggle.");
+                return;
+            }
+
+            console.log("Toggle");      //console로 확인하기 위함입니다.
+            
+
+            let FrontCards;             //앞면인 카드들만 선별해서 담는 배열입니다.
+            let BackCards;              //뒷면인 카드들만 선별해서 담는 배열입니다.
+
+            FrontCards =  imgArr.filter(function (something) {  
+                return something.getSource() !== back;          //뒷면이 아닐 경우...
+            });
+
+            BackCards = imgArr.filter(function (something) {    
+                return something.getSource() === back;          //앞면이 아닐 경우...
+            });
+
+            
+            for (let i = 0; i < FrontCards.length; i++) {       //앞면인 카드는 뒷면으로...
+                FrontCards[i].src = back;
+            }
+
+            
+            for (let i = 0; i < BackCards.length; i++) {        //뒷면인 카드는 원래의 이름(앞면)으로...
+                BackCards[i].src = BackCards[i].name;           
+            }
+            
+            
+            console.log("같은 짝의 개수 ="+(cntTotal = sources.length-cntTotal));    //카드들이 다 뒤집히면 지금까지 짝의 갯수 또한 뒤집힌다.
+                                                                                    //혹시나 몰라서 콘솔 창으로 봅니다.
+        }
+
+
+        //보이기
+        function WatchCard(imgArr){ //뒷면인 카드들을 모두 앞으로 돌립니다..
+                                    //앞면을 잠시 보여주는 걸로하겠습니다. 찾는 도중에도 가능합니다.
+            let BackCards;          //잠깐 보여주는 것이니 현재의 changed, cntFront는 안 건드려도 된다고 판단합니다.
+            
+
+            //잠시 보여질 때 카드가 선택 안되게 하고 싶다!
+            //그렇다면 어떡할까요? onclick의 초반부 if문인 cntFront=2를 대입하자.그리고 마지막에 원래 있던 cntFront를 다시 대입해줍니다.
+
+            /*
+            맨 처음
+            let oldValue = cntFront;
+            cntFront = 3;//혹은 2
+            
+            //(~중략~)
+            
+            //맨끝에
+            cntFront = oldValue;    //이런식으로 하면 카드가 잠시 뒤집히는 동안에 클릭이 되지 않는다. 
+                                    //다만 이게 정말 필요한지 아직은 확신이 없어서 그냥 이대로 둔다.
+            */
+            
+            BackCards = imgArr.filter(function (something) {
+                return something.getSource() === back;
+            });
+
+            for (let i = 0; i < BackCards.length; i++) {
+                BackCards[i].src = BackCards[i].name;
+            }
+            
+            setTimeout(() => {
+                for (let i = 0; i < BackCards.length; i++) {
+                        BackCards[i].src = back;
+                }
+            }, 200);//잠깐 힐끔 보여줍니다. 편하게 전체적인 카드를 알고 싶으면 토글을 사용하시기 바랍니다.
+        }
+        
+
+        //감추기
+        function KeepItSecret(imgArr) { //앞면인 것들을 모두 뒷면으로 돌린다. 
+            let FrontCards;
+            cntTotal = 0;                  //여태 찾은 짝도 ZERO!
+            cntFront = 0;                 //일단 감추면 지금까지 찾았던 카드들은 모두 무효화가 되야한다. 그러니 지금 당장 찾는 것도 무효화한다.
+
+            FrontCards = imgArr.filter(function (something) {
+                return something.getSource() !== back;
+            });
+
+            //앞면인 카드는 뒷면으로 바꾼다.
+            for (let i = 0; i < FrontCards.length; i++) { 
+                FrontCards[i].src = back;
+                if(FrontCards[i].changed===true){
+                    FrontCards[i].changed = false;  //예를 들어 1장의 카드를 선택해서 뒤집힌 상태면 
+                                                    //cntFront뿐만 아니라 그 카드의 changed값 또한 초기화를 해줘야한다.
+                }
+            }
+        }
+
+
+        /* 버튼 */
+
+        // 1. 생성 및 초기화
+        for (let i = 0; i < 4; i++) {
+            button = document.createElement('button');      //버튼 요소를 만든다.
+            button.innerHTML = buttonText[i];               //버튼의 글자가 보이도록 한다.
+            button.value = buttonText[i];                   //value값도 마찬가지로 한다.
+            buttonArr[i] = button;                          //만들은 요소를 배열에 저장한다.
+            document.body.appendChild(buttonArr[i]);        //만들어진 요소를 body태그에 붙인다.
+        }
+
+        
+
+
+        // 2. 버튼에 이벤트 추가.
+        for (let i = 0; i < 4; i++) {   //버튼에 onclick() 이벤트 추가
+
+            buttonArr[i].onclick = function() {     
+
+                if(this===buttonArr[0]){            //셔플
+                    console.log("Shuffle");
+                    ShuffleDraw();
+
+                } else if(this === buttonArr[1]){   //뒤집기(=토글)
+                    ToggleCard(imgArr);
+
+                } else if(this === buttonArr[2]){   //보이기
+                    console.log("Watch");
+                    WatchCard(imgArr);
+                    
+                } else {
+                    console.log("Secret");          //감추기
+                    KeepItSecret(imgArr);
+                }
+            }
+        }
+        
+        document.body.append(document.createElement('br'));//한줄 내리고!
+
+        //document.body.innerHTML = "<br>"; //왜인지 이렇게 하면 카드의 onclick이 동작을 안한다.
+                                            //좀 더 조사해봐야겠다.
+        
+        /* 카드 */
+
+        // 1. 요소의 생성 및 초기화
+        for(let i = 0; i < cardKinds*2 ; i++){
+            img = document.createElement('img');    //요소 생성
+            img.setAttribute('src',back);           //소스 초기화: 처음에는 뒷면만 보이게 한다.
+            img.setAttribute('name',sources[i%4]);  //name 속성에 앞면의 소스를 넣는다.
+            img.changed = false;                    //카드가 클릭해서 앞면이 된건지 확인.
+                                                    //(3/25)수업을 통해서 이렇게 사용자 정의 속성을 추가하면 안된다고 했는데,
+                                                    //왜 인지 된다?! f12->dir(imgArr[0])를 하고 봤는데 멀쩡히 속성으로 추가되었다.
+            
+            img.getSource = function(){             
+                return this.attributes.src.value;   //그냥 this.src하면 절대 경로로 쫙다 뽑는다. 이러지 말고
+            }                                       //끝의 파일 이름만 가져오도록 했다. ex) piano.jpg;//소문자로 바뀜 주의!
+            imgArr[i] = img;                        //배열에 넣는다.
+        }
+        
+        // 1-1. 함정 카드 요소의 생성 및 초기화 - 과정이 일반 카드와 같다, 다만 changed라는 속성은 추가X 필요가 없다.
+        trapCard = document.createElement('img');   
+        trapCard.setAttribute('src',back);
+        trapCard.setAttribute('name','trap.jpg');
+        //트랩카드는 손 댄 순간 모든게 초기화 되니 changed같은 프로퍼티는 필요없다.
+        trapCard.getSource = function(){
+            return this.attributes.src.value;
+        }
+
+        imgArr.push(trapCard);//배열의 마지막에 낑겨 넣는다. 이래서 배열의 총길이는 cardKinds * 2 + 1이 된다. 중요X
+        
+
+        Shuffle(imgArr);        //카드를 섞는다
+        DrawCards(imgArr);      // 그린다.  두 과정을 ShuffleDraw()로 할 수도 있지만 과정을 더 잘 보여줘서 이렇게 한다.
+        
+        
+
+        // 2. 각 카드에 이벤트를 추가해준다. (참고: cntFront 변수를 사용합니다.)
+        for(let i=0; i < imgArr.length ; i++){    
+
+            //함정 카드 onclick 초기화
+            if(imgArr[i].name === 'trap.jpg'){//함정 카드의 경우 이벤트를 다르게 짠다.
+                
+                let trappingCard = imgArr[i];   //가독성을 위해서 변수를 쓴다.
+
+                console.log("IT'S A TRAP! imgArr["+i+"]");//꼼수지만 console창으로 현재 함정 카드 위치를 알 수 있다.
+                                                            //다른 사람이 할 때는 주석 처리한다.
+
+                trappingCard.onclick = function(){
+                    if (cntFront >= 2) return;              //현재 카드 2장 뽑고 대기하는 0.8초 동안은 클릭되지 않는다.
+                    if (this.getSource()!==back) return;    //이미 함정 카드가 앞면이면 그냥 돌려보낸다.
+                    
+                    console.log("Your On Trap!");           //함정 카드 발동!
+
+                    cntFront=2;         //함정 카드 발동 중에는 다른 카드를 클릭하거나 하는 행위를 금한다.
+
+
+                    this.src = this.name;                   //앞면을 보이게 한다.
+                    
+                    imgArr.forEach(i=>{i.src=this.name});   //모든 카드들을 함정 카드의 앞면으로 바꾼다.
+                    setTimeout(()=>{                        //시간을 준다.
+
+                        cntFront=0;                         //현재 앞면 개수(cntFront)와 지금까지 맞춘 짝의 개수(cntTotal)을 초기화한다.
+                        cntTotal = 0;                       //한 마디로, 처음부터 다시하라는 뜻이다.
+
+                        let findingChanged = imgArr.filter(function (something) {
+                            return something.changed;       //지금 막 바뀐(클릭해서 뒷면에서 앞면으로 뒤집은) 카드를 필터로 찾아냅니다.
+                        }).forEach(i=>{i.changed=false;});  //그 각각의 카드들의 changed값에 false를 넣어서 초기화 해줍니다.
+
+                        imgArr.forEach(i=>{i.src=back;});   //모든 카드들을 다시 뒷면으로 바꿉니다.
+                        
+                        Shuffle(imgArr);                    //다시 섞는다.
+                        DrawCards(imgArr);                  //그리고 다시 뿌린다.
+                    },800);                                 //0.8초 동안은 기분이 안 좋을 것이다. 내가 만들었지만 기분 안 좋다.
+                    
+                }
+                continue;
+            }
+
+
+            //일반 카드 onclick 설정
+            imgArr[i].onclick = function(){
+
+                if (cntFront >= 2) return;  //2장 이상이 앞면이 되면 다른 카드 클릭시 return
+                                            //(짝을 찾아서 앞면으로 고정된 앞면은 제외)
+
+                if(this.getSource()!==back) return; //이미 앞면이면 패스한다.
+                
+                console.log("Your on count");   //console에서 확인하기 위함이다.
+                
+
+                ++cntFront;                 //"클릭해서" 앞면이 될때마다 +1;
+                this.src = this.name;       //뒷면에서 앞면으로 돌려준다.
+                this.changed = true;        //클릭해서 이 카드가 뒤집혔다는 걸 알려준다.
+                
+                if(cntFront===2){            //만약 2장이 되면.
+                    let CompareTwo = imgArr.filter(function (something) {
+                        return something.changed;//지금 막 바뀐 두 장의 카드를 구해옵니다.
+                    });//(2)[img,img] 로 가져오게 됩니다.
+                   
+                    /*
+                    테스트용이다.
+                    console.log(CompareTwo[0].getSource());
+                    console.log(CompareTwo[1].getSource());
+                    console.log(CompareTwo.length);
+                    */
+
+                    if(CompareTwo[0].name===CompareTwo[1].name){    //두 카드의 앞면(=name)을 비교합니다.
+                        console.log("Same!")                        //같으면 콘솔로 Same!이 출력됩니다.
+                        CompareTwo[0].changed = false;              //changed를 초기화 해줍니다.
+                        CompareTwo[1].changed = false;
+                        cntFront = 0;                               //"클릭해서" 앞면이 된 카드의 개수를 초기화합니다.
+                        cntTotal++;
+                        if(cntTotal>=sources.length){               //만약 더 이상 맞출 짝이 없으면(함정 카드 예외)
+                            let con = confirm("Continue?");         //계속하시겠습니까? 하고 묻습니다.
+                            if(con){                                //Yes면 모든 것을 초기화하고 카드를 섞습니다.
+                                imgArr.forEach(i=>{i.src=back;});
+                                Shuffle(imgArr);
+                                DrawCards(imgArr);
+                                cntTotal = 0;
+                            } else {                                //No면 GOOD BYE라는 말귀와 1초후 탭이 닫힙니다.
+                                let msg =document.createElement('h1');
+                                msg.innerHTML = "GOOD BYE";
+                                document.body.appendChild(msg);
+                                setTimeout(()=>{self.close()},1000);
+                            }
+                        }
+                    } else {                                        //만약 같은 이름의 카드가 아니면
+                        setTimeout(() => {
+                            CompareTwo[0].src = back;               //앞면이던 2개의 카드를 다시 뒷면으로 합니다.
+                            CompareTwo[1].src = back;
+                            CompareTwo[0].changed = false;          
+                            CompareTwo[1].changed = false;
+                            cntFront = 0;
+                        }, 800);
+                    }
+
+                }//if(cntFront===2)
+            
+            }//onclick
+            
+        }//for
+
+        
+    }//onload
+    
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
